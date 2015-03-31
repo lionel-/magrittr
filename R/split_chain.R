@@ -12,7 +12,7 @@ split_chain <- function(expr, env)
   # lists for holding the right-hand sides and the pipe operators.
   rhss  <- list()
   pipes <- list()
-  monads <- list()
+  units <- list()
 
   # Process the call, splitting it at each valid magrittr pipe operator.
   i <- 1L
@@ -24,7 +24,7 @@ split_chain <- function(expr, env)
       rhs <- eval(rhs, env, env)
 
     fun <- eval(rhs[[1]], env)
-    monads[[i]] <- inherits(fun, "monadic")
+    units[[i]] <- attr(fun, "unit")
 
     rhss[[i]] <-
       if (is_dollar(pipes[[i]]) || is_funexpr(rhs))
@@ -45,5 +45,5 @@ split_chain <- function(expr, env)
   }
 
   # return the components; expr will now hold the left-most left-hand side.
-  list(rhss = rev(rhss), pipes = rev(pipes), monads = rev(monads), lhs = expr)
+  list(rhss = rev(rhss), pipes = rev(pipes), units = rev(units), lhs = expr)
 }

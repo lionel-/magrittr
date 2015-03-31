@@ -14,14 +14,26 @@ pipe <- function()
     # split the pipeline/chain into its parts.
     chain_parts <- split_chain(match.call(), env = env)
 
-    pipes  <- chain_parts[["pipes" ]] # the pipe operators.
-    rhss   <- chain_parts[["rhss"  ]] # the right-hand sides.
-    monads <- chain_parts[["monads"]] # the monadic flags.
-    lhs    <- chain_parts[["lhs"   ]] # the left-hand side.
+    pipes <- chain_parts[["pipes"]] # the pipe operators.
+    rhss  <- chain_parts[["rhss" ]] # the right-hand sides.
+    units <- chain_parts[["units"]] # the monadic unit functions.
+    lhs   <- chain_parts[["lhs"  ]] # the left-hand side.
+
+    is_monad <- vapply(units, is_unit, logical(1))
+    lhs_unit <- units[1]
+    units <- map(seq_along(units[-length(units)]), function(i) {
+      same_classes <- identical(class(units[[i]]), class(units[[i+1]]))
+      if (same_classes) {
+        NULL
+      } else {
+        units[[i+1]]
+      }
+    })
+    units <- c(lhs_unit, units)
 
     # Create the list of functions defined by the right-hand sides.
     env[["_function_list"]] <- lapply(seq_along(rhss), function(i) {
-      wrap_function(rhss[[i]], pipes[[i]], monads[[i]], parent)
+      wrap_function(rhss[[i]], pipes[[i]], is_monad[[i]], units[[i]], parent)
     })
 
     # Create a function which applies each of the above functions in turn.

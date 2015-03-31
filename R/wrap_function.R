@@ -14,7 +14,7 @@
 #   or not.
 #
 # @return a function of a single argument, named \code{.}.
-wrap_function <- function(body, pipe, is_monad, env)
+wrap_function <- function(body, pipe, is_monad, unit, env)
 {
 
   if (is_tee(pipe)) {
@@ -22,10 +22,25 @@ wrap_function <- function(body, pipe, is_monad, env)
   } else if (is_dollar(pipe)) {
     body <- substitute(with(., b), list(b = body))
   }
+
+
+  # If we deal with a monad, call bind() generic
   if (is_monad) {
     fun <- body[[1]]
     args <- as.list(body[-c(1:2)])
-    body <- as.call(as.expression(c(list(bind, quote(.), fun), args)))
+
+    # Here we call unit() on the input to lift it to a monadic value if
+    # needed. Not sure this is a good idea, this is not how it's done in
+    # Haskell
+    input <-
+      if (!is.null(unit)) {
+        ## body[[2]] <- as.call(as.expression(list(unit, body[[2]])))
+        as.call(as.expression(list(unit, quote(.))))
+      } else {
+        quote(.)
+      }
+    body <- as.call(as.expression(c(list(bind, input, fun), args)))
   }
+
   eval(call("function", as.pairlist(alist(.=)), body), env, env)
 }
