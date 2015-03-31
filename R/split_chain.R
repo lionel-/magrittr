@@ -24,7 +24,7 @@ split_chain <- function(expr, env)
       rhs <- eval(rhs, env, env)
 
     fun <- eval(rhs[[1]], env)
-    units[[i]] <- attr(fun, "unit")
+    units[[i]] <- attr(fun, "unit") %||% list(NULL)
 
     rhss[[i]] <-
       if (is_dollar(pipes[[i]]) || is_funexpr(rhs))
@@ -46,4 +46,12 @@ split_chain <- function(expr, env)
 
   # return the components; expr will now hold the left-most left-hand side.
   list(rhss = rev(rhss), pipes = rev(pipes), units = rev(units), lhs = expr)
+}
+
+`%||%` <- function(lhs, rhs) {
+  if (is.null(lhs)) {
+    rhs
+  } else {
+    lhs
+  }
 }
