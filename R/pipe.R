@@ -21,7 +21,7 @@ pipe <- function()
 
     is_monad <- vapply(units, is_unit, logical(1))
     lhs_unit <- units[1]
-    units <- map(seq_along(units[-length(units)]), function(i) {
+    units <- lapply(seq_along(units[-length(units)]), function(i) {
       same_classes <- identical(class(units[[i]]), class(units[[i+1]]))
       if (same_classes) {
         NULL
