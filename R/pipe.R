@@ -19,7 +19,7 @@ pipe <- function()
     units <- chain_parts[["units"]] # the monadic unit functions.
     lhs   <- chain_parts[["lhs"  ]] # the left-hand side.
 
-    is_monad <- vapply(units, is_unit, logical(1))
+    is_monad <- vapply(units, function(x) inherits(x, "unit"), logical(1))
     lhs_unit <- units[1]
     units <- lapply(seq_along(units[-length(units)]), function(i) {
       same_classes <- identical(class(units[[i]]), class(units[[i+1]]))
